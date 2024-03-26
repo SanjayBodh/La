@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 300px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input[type="text"], 
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            margin-top: 5px;
+        }
+    </style>
+<body>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage.js"></script>
+</head>
+<div  id="signin-form" class="container">
+    <h2>Sign In</h2>
+    <form action="">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="text" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            <input type="checkbox" id="show-password-checkbox" onchange="togglePasswordVisibility()">
+            <label for="show-password-checkbox">Show Password</label>
+        </div>
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+            <input type="checkbox" id="show-confirm-password-checkbox" onchange="toggleConfirmPasswordVisibility()">
+            <label for="show-confirm-password-checkbox">Show Confirm Password</label>
+            <p id="password-error" class="error-message"></p>
+        </div>
+        <div class="form-group">
+            <button type="submit" onclick="signIn()">Sign In</button>
+        </div>
+    </form>
+    <p> new user <a href="signup.html">signup</a></p>
+    <p><a href="forgetpass.html">forgot password</a></a>
+</div>
+
+<script>
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBRZrQ35ZCsWtJ_Dvcq0w0iOED2ypXv89w",
+    authDomain: "databse-b7f4b.firebaseapp.com",
+    databaseURL: "https://databse-b7f4b-default-rtdb.firebaseio.com",
+    projectId: "databse-b7f4b",
+    storageBucket: "databse-b7f4b.appspot.com",
+    messagingSenderId: "440573409846",
+    appId: "1:440573409846:web:4a49d38fc1d5e5bb803697",
+    measurementId: "G-JE7M0T3QSJ"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  firebase.auth.Auth.Persistence.LOCAL;
+
+  function signIn() {
+    var email = document.getElementById("email").value;
+    var password = document.getElementById("password").value;
+    var emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+    if (!emailPattern.test(email)) {
+        alert("Please enter a valid email address");
+        return;
+    }
+
+    if (!password) {
+        alert("Please enter your password.");
+        return;
+    }
+
+    if (email !== "" && password !== "") {
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Signed in
+                var user = userCredential.user;
+                console.log("User signed in:", user);
+                // Redirect or perform further actions here
+                window.location.href = "home.html";
+            })
+            .catch((error) => {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                
+                switch (errorCode) {
+                    case "auth/network-request-failed":
+                        errorMessage = "Your network connection is low or unreachable. Please check your connection.";
+                        break;
+                    case "auth/wrong-password":
+                        errorMessage = "Incorrect password. Please try again.";
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+
+                console.error("Sign in error:", errorCode, errorMessage);
+                window.alert("Error: " + errorMessage);
+            });
+    } else {
+        window.alert('Please fill out all fields');
+    }
+}
+
+</script>
+
+<script>
+    function togglePasswordVisibility() {
+        var passwordField = document.getElementById("password");
+        passwordField.type = (passwordField.type === "password") ? "text" : "password";
+    }
+
+    function toggleConfirmPasswordVisibility() {
+        var confirmPasswordField = document.getElementById("confirm_password");
+        confirmPasswordField.type = (confirmPasswordField.type === "password") ? "text" : "password";
+    }
+
+    document.getElementById("signin-form").addEventListener("submit", function(event) {
+        var password = document.getElementById("password").value;
+        var confirmPassword = document.getElementById("confirm_password").value;
+        var passwordError = document.getElementById("password-error");
+
+        if (password !== confirmPassword) {
+            passwordError.textContent = "Passwords do not match";
+            event.preventDefault(); // Prevent form submission
+        } else {
+            passwordError.textContent = ""; // Clear error message
+        }
+    });
+</script>
+<script>
+firebase.auth().onAuthStateChanged(function(user) {
+    console.log("Current user:", user);
+    if(user) {
+        console.log("User signed in:", user);
+        window.location.href = "home.html";
+    } else {
+        console.log("User not signed in or authentication state change not triggered.");
+    }
+});
+</script>
+</body>
+</html>
+
