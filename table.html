@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    body{
+        padding:0;
+        margin:0;
+    }
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between; 
+            gap:2rem;
+            
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background:white;
+            box-shadow:2px 5px 8px rgba(0,0,0,0.5);
+            width:400px;
+            border-radius:10px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            width:100%;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-right: 10px;
+            color:black;
+        }
+        
+
+        .section,.gender {
+    width: 350px;
+    height: auto;
+    word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+    white-space: normal; /* Ensures the text wraps naturally */
+    padding:10px 0;
+}
+.name{
+    position:relative;
+    left:140px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+@media(max-width:768px){
+    .container {
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap:2rem;
+            
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background:white;
+            box-shadow:2px 5px 8px rgba(0,0,0,0.5);
+            width:85%;
+            margin:0 auto;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            width:100%;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-right: 10px;
+            color:black;
+        }
+        
+
+        .section,.gender {
+    width: 100%;
+    height: auto;
+    word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+    white-space: normal; /* Ensures the text wraps naturally */
+    padding:10px 0;
+    text-align:center;
+   
+}
+.name{
+    position:relative;
+    left:70px;
+    font-weight:bold;
+    font-size:18px;
+    color:red;
+} 
+}
+    </style>
+</head>
+<body>
+    <div class="container mt-3" id="container">
+    </div>
+    <script type="module">
+        var stdNo = 0;
+        var container = document.getElementById("container");
+
+        function AddItemToTable(name, roll, sec, gen, timestamp) {
+    let box = document.createElement("div");
+    box.classList.add("box");
+
+    let row1 = document.createElement("div");
+    row1.classList.add("row");
+
+    let row2 = document.createElement("div");
+    row2.classList.add("row");
+
+    let row3 = document.createElement("div");
+    row3.classList.add("row");
+
+    let sNoCol = document.createElement("div");
+    sNoCol.classList.add("label");
+    sNoCol.textContent = " " + (++stdNo);
+
+    let nameCol = document.createElement("div");
+    nameCol.classList.add("label", "name");
+    nameCol.textContent = " " + name;
+
+    let secCol = document.createElement("div");
+    secCol.classList.add("label", "section");
+    secCol.textContent = " " + sec;
+
+    let genCol = document.createElement("div");
+    genCol.classList.add("label", "gender");
+    genCol.textContent = " " + gen;
+
+    let rollCol = document.createElement("div");
+    rollCol.classList.add("label");
+    rollCol.textContent = " " + roll;
+
+    let timeCol = document.createElement("div");
+    timeCol.classList.add("label");
+    const timestampDate = new Date(timestamp);
+    const formattedTime = `${timestampDate.getHours().toString().padStart(2, '0')}:${timestampDate.getMinutes().toString().padStart(2, '0')}:${timestampDate.getSeconds().toString().padStart(2, '0')}`;
+    timeCol.textContent = " " + formattedTime;
+
+    row1.appendChild(sNoCol);
+    row1.appendChild(nameCol);
+
+    row2.appendChild(secCol);
+    row2.appendChild(genCol);
+
+    row3.appendChild(rollCol);
+    row3.appendChild(timeCol);
+
+    box.appendChild(row1);
+    box.appendChild(row2);
+    box.appendChild(row3);
+
+    container.appendChild(box);
+}
+
+        function AddAllItemsToTable(TheStudents) {
+    stdNo = 0;
+    container.innerHTML = "";
+    TheStudents.forEach(element => {
+        AddItemToTable(element.NameOfStd, element.RollNo, element.Section, element.Gender, element.Timestamp); // Include timestamp
+    });
+}
+
+        // Database
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getDatabase, get, ref, child, onValue  } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCDXgxdDeeO6nHdyXslDIGxJQYouX3Cwbo",
+            authDomain: "crud-8a271.firebaseapp.com",
+            projectId: "crud-8a271",
+            storageBucket: "crud-8a271.appspot.com",
+            messagingSenderId: "10047076141",
+            appId: "1:10047076141:web:88fa13241e7ffa225185a4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+
+        function GetAllDataRealtime() {
+            const dbref = ref(db, "TheStudents");
+
+            onValue(dbref, (snapshot) => {
+                var students = [];
+                snapshot.forEach(childSnapshot => {
+                    students.push(childSnapshot.val());
+                });
+
+                AddAllItemsToTable(students);
+            })
+        }
+
+        window.onload = GetAllDataRealtime;
+    </script>
+</body>
+</html>
+
+
+
+
+

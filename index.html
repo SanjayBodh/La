@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+</head>
+<body>
+
+  <h1>Welcome to the Home Page</h1>
+  Name <input id="Namebox" type="text"><br><br>
+  Rollno <input id="Rollbox" type="text"><br><br>
+  Section <input id="Secbox" type="text"><br><br>
+  Gender <input id="Genbox" type="text"><br><br>
+  Timestamp <input id="Timestampbox" type="text" readonly><br><br>
+  <hr>
+  <button id="insertBtn" disabled>Insert</button>
+  <button id="selectBtn" disabled>Select</button>
+  <button id="updateBtn" disabled>Update</button>
+  <button id="deleteBtn" disabled>Delete</button>
+  <button id="logoutButton">Logout</button>
+
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getDatabase, get, ref, set, child, update, remove } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyCDXgxdDeeO6nHdyXslDIGxJQYouX3Cwbo",
+    authDomain: "crud-8a271.firebaseapp.com",
+    projectId: "crud-8a271",
+    storageBucket: "crud-8a271.appspot.com",
+    messagingSenderId: "10047076141",
+    appId: "1:10047076141:web:88fa13241e7ffa225185a4"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase();
+    const auth = getAuth();
+
+    const namebox = document.getElementById("Namebox");
+    const rollbox = document.getElementById("Rollbox");
+    const secbox = document.getElementById("Secbox");
+    const genbox = document.getElementById("Genbox");
+
+    const insertbtn = document.getElementById("insertBtn");
+    const selectbtn = document.getElementById("selectBtn");
+    const updatebtn = document.getElementById("updateBtn");
+    const deletebtn = document.getElementById("deleteBtn");
+    var timestampInput = document.getElementById("Timestampbox");
+
+    function enableButtons() {
+      insertbtn.disabled = false;
+      selectbtn.disabled = false;
+      updatebtn.disabled = false;
+      deletebtn.disabled = false;
+    }
+
+    function disableButtons() {
+      insertbtn.disabled = true;
+      selectbtn.disabled = true;
+      updatebtn.disabled = true;
+      deletebtn.disabled = true;
+    }
+
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.replace('Login.html');
+      } else {
+        enableButtons();
+      }
+    });
+
+    // Add an event listener to the logout button
+    const logoutButton = document.getElementById('logoutButton');
+    logoutButton.addEventListener('click', () => {
+      // Sign out the user
+      signOut(auth)
+        .then(() => {
+          // Sign-out successful, redirect to login page
+          window.location.replace('Login.html');
+        })
+        .catch((error) => {
+          // Handle errors here (e.g., display error message)
+          console.error(error.message);
+        });
+    });
+
+    function InsertData() {
+    const now = new Date(); // Get current date and time
+    set(ref(db, "TheStudents/" + rollbox.value), {
+        NameOfStd: namebox.value,
+        RollNo: rollbox.value,
+        Section: secbox.value,
+        Gender: genbox.value,
+        Timestamp: now.toISOString() // Store date and time in ISO format
+    })
+    .then(() => {
+        alert("Data stored successfully");
+    })
+    .catch((error) => {
+        alert("Data not stored. Error: " + error);
+    });
+}
+
+    function SelectData() {
+    const dbref = ref(db);
+
+    get(child(dbref, "TheStudents/" + rollbox.value)).then((snapshot) => {
+        if (snapshot.exists()) {
+            namebox.value = snapshot.val().NameOfStd;
+            secbox.value = snapshot.val().Section;
+            genbox.value = snapshot.val().Gender;
+            
+            // Format and display the full timestamp
+            const timestamp = snapshot.val().Timestamp ? new Date(snapshot.val().Timestamp) : null;
+            if (timestamp) {
+                const formattedDate = timestamp.getFullYear() + "-" + 
+                                      (timestamp.getMonth() + 1).toString().padStart(2, '0') + "-" + 
+                                      timestamp.getDate().toString().padStart(2, '0');
+                const formattedTime = [
+                    timestamp.getHours().toString().padStart(2, '0'),
+                    timestamp.getMinutes().toString().padStart(2, '0'),
+                    timestamp.getSeconds().toString().padStart(2, '0')
+                ].join(':');
+                timestampInput.value = formattedDate + ' ' + formattedTime; // Combine date and time
+            } else {
+                timestampInput.value = 'No timestamp';
+            }
+        } else {
+            alert("No data found");
+        }
+    })
+    .catch((error) => {
+        alert("Failed to retrieve data. Error: " + error);
+    });
+}
+
+    function UpdateData() {
+      update(ref(db, "TheStudents/" + rollbox.value), {
+        NameOfStd: namebox.value,
+        Section: secbox.value,
+        Gender: genbox.value
+      })
+        .then(() => {
+          alert("Data updated successfully");
+        })
+        .catch((error) => {
+          alert("Data not updated. Error: " + error.message);
+        });
+    }
+
+    function DeleteData() {
+      remove(ref(db, "TheStudents/" + rollbox.value))
+        .then(() => {
+          alert("Data deleted successfully");
+        })
+        .catch((error) => {
+          alert("Data not deleted. Error: " + error.message);
+        });
+    }
+
+    window.onload = function () {
+      if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+      }
+    }
+
+    insertbtn.addEventListener('click', InsertData);
+    selectbtn.addEventListener('click', SelectData);
+    updatebtn.addEventListener('click', UpdateData);
+    deletebtn.addEventListener('click', DeleteData);
+  </script>
+
+</body>
+</html>
